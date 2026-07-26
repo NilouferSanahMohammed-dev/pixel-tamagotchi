@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>little egg &middot; a pixel pet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Baloo+2:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="room">
+  <div class="device" id="device">
+
+    <div class="ear ear-left"></div>
+    <div class="ear ear-right"></div>
+
+    <div class="screen-bezel">
+      <canvas id="screen" width="128" height="112"></canvas>
+      <div class="scanlines"></div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat">
+        <span class="stat-label">hunger</span>
+        <div class="stat-track"><div class="stat-fill" id="hungerFill"></div></div>
+      </div>
+      <div class="stat">
+        <span class="stat-label">joy</span>
+        <div class="stat-track"><div class="stat-fill" id="joyFill"></div></div>
+      </div>
+      <div class="stat">
+        <span class="stat-label">energy</span>
+        <div class="stat-track"><div class="stat-fill" id="energyFill"></div></div>
+      </div>
+    </div>
+
+    <div class="button-row">
+      <button class="pet-btn" id="feedBtn" title="Feed">
+        <span class="btn-icon">◆</span>
+        <span class="btn-label">feed</span>
+      </button>
+      <button class="pet-btn" id="playBtn" title="Play">
+        <span class="btn-icon">●</span>
+        <span class="btn-label">play</span>
+      </button>
+      <button class="pet-btn" id="sleepBtn" title="Sleep">
+        <span class="btn-icon">▲</span>
+        <span class="btn-label">sleep</span>
+      </button>
+    </div>
+
+    <div class="nameplate" id="nameplate">yours &middot; day 1</div>
+  </div>
+
+  <p class="hint" id="hint">tap an egg to hatch something small</p>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
