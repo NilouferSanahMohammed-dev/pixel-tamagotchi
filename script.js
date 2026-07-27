@@ -12,7 +12,7 @@
 const STORAGE_KEY = "pixel-tamagotchi-save-v1";
 const TICK_MS = 1000;
 const DECAY_PER_TICK = 0.06; // stat points lost per second, per stat
-const EVOLUTION_HOURS = [0, 0.02, 0.05, 0.1]; // egg -> baby -> teen -> adult (hours of care)
+const EVOLUTION_HOURS = [0, 0.02, 0.06]; // kit -> bunny -> rabbit (hours of care)
 
 const canvas = document.getElementById("screen");
 const ctx = canvas.getContext("2d");
@@ -28,111 +28,96 @@ const PALETTE = {
   "d": "#8b6fb5",
   "s": "#e8e0f5",
   "e": "#2b2b2b",
+  "g": "#cfc6e0",
 };
 
 /* ---------------- Sprites (16 wide x 14 tall grids) ---------------- */
 
 const SPRITES = {
-  egg: [
-    "................",
-    "................",
-    "......wwww......",
-    ".....wssssw.....",
-    "....wsssssswsw..",
-    "....wssssssswsw.",
-    "....wsssssswsw..",
-    ".....wssssw.....",
-    "......wwww......",
+  kit: [
     "................",
     "................",
     "................",
-    "................",
-    "................",
-  ],
-  baby: [
-    "................",
-    "......pppp......",
-    ".....pppppp.....",
-    "....pp.pp.pp....",
-    "....pp.pp.pp....",
-    "....pppppppp....",
-    "....pp.pp.pp....",
-    "....pppppppp....",
-    ".....pppppp.....",
-    "......pppp......",
+    "......ww.ww.....",
+    ".....wwwwwww....",
+    "....wwwwwwwww...",
+    "....wwgw.gwww...",
+    "....wwwwpwww....",
+    ".....wwwwwww....",
+    "......wwwww.....",
     "................",
     "................",
     "................",
     "................",
   ],
-  baby_blink: [
+  bunny: [
     "................",
-    "......pppp......",
-    ".....pppppp.....",
-    "....pp....pp....",
-    "....pp....pp....",
-    "....pppppppp....",
-    "....pp.pp.pp....",
-    "....pppppppp....",
-    ".....pppppp.....",
-    "......pppp......",
-    "................",
-    "................",
-    "................",
-    "................",
-  ],
-  teen: [
-    "................",
-    ".....dddddd.....",
-    "....dddddddd....",
-    "...dd.dd.dd.dd..",
-    "...dd.dd.dd.dd..",
-    "...dddddddddd...",
-    "...dd......dd...",
-    "...dd.dddd.dd...",
-    "....dddddddd....",
-    ".....dddddd.....",
-    "......d..d......",
-    "................",
+    ".....ww..ww.....",
+    ".....ww..ww.....",
+    ".....ww..ww.....",
+    "....wwwwwwww....",
+    "...wwwwwwwwww...",
+    "...wgewwwewgw...",
+    "...wwwwpwwwww...",
+    "...wwwwwwwwww...",
+    "....wwwwwwww....",
+    ".....w....w.....",
+    ".....w....w.....",
     "................",
     "................",
   ],
-  adult: [
+  bunny_blink: [
     "................",
-    "....kkkkkkkk....",
-    "...kkkkkkkkkk...",
-    "..kk.kk..kk.kk..",
-    "..kk.kk..kk.kk..",
-    "..kkkkkkkkkkkk..",
-    "..kk........kk..",
-    "..kk.kkkkkk.kk..",
-    "...kkkkkkkkkk...",
-    "....kkkkkkkk....",
-    ".....kk..kk.....",
-    ".....kk..kk.....",
+    ".....ww..ww.....",
+    ".....ww..ww.....",
+    ".....ww..ww.....",
+    "....wwwwwwww....",
+    "...wwwwwwwwww...",
+    "...wg....gwgw...",
+    "...wwwwpwwwww...",
+    "...wwwwwwwwww...",
+    "....wwwwwwww....",
+    ".....w....w.....",
+    ".....w....w.....",
     "................",
     "................",
+  ],
+  rabbit: [
+    "....ww....ww....",
+    "....ww....ww....",
+    "....wp....pw....",
+    "....ww....ww....",
+    "...wwwwwwwwww...",
+    "..wwwwwwwwwwww..",
+    "..wgewww.wewgw..",
+    "..wwwwwwpwwwww..",
+    "..wwwwwwwwwwww..",
+    "...wwwwwwwwww...",
+    "....ww....ww....",
+    "....ww....ww....",
+    ".....w.ww.w.....",
+    "......www.......",
   ],
   sleeping: [
     "................",
     "................",
-    ".....pppppp.....",
-    "....pppppppp....",
-    "....pp....pp....",
-    "....pp----pp....",
-    "....pppppppp....",
-    ".....pppppp.....",
+    "....ww....ww....",
+    "...wwww..wwww...",
+    "..wwwwwwwwwwww..",
+    "..wwwwwwwwwwww..",
+    "..wg.wwwwwg.w...",
+    "..wwwwwwpwwwww..",
+    "...wwwwwwwwww...",
+    "....wwwwwwww....",
     "................",
-    "......w.w.......",
-    ".......w........",
-    "................",
-    "................",
+    "........z.......",
+    ".........z......",
     "................",
   ],
 };
 
 function drawSprite(gridName) {
-  const grid = SPRITES[gridName] || SPRITES.egg;
+  const grid = SPRITES[gridName] || SPRITES.kit;
   ctx.fillStyle = "#b9d191";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -155,7 +140,7 @@ function defaultState() {
     joy: 80,
     energy: 80,
     careHours: 0,
-    stage: "egg",
+    stage: "kit",
     sleeping: false,
     bornAt: Date.now(),
     lastTick: Date.now(),
@@ -183,10 +168,9 @@ let blinkOn = false;
 /* ---------------- Evolution ---------------- */
 
 function stageForCareHours(hours) {
-  if (hours >= EVOLUTION_HOURS[3]) return "adult";
-  if (hours >= EVOLUTION_HOURS[2]) return "teen";
-  if (hours >= EVOLUTION_HOURS[1]) return "baby";
-  return "egg";
+  if (hours >= EVOLUTION_HOURS[2]) return "rabbit";
+  if (hours >= EVOLUTION_HOURS[1]) return "bunny";
+  return "kit";
 }
 
 /* ---------------- Rendering ---------------- */
@@ -203,9 +187,9 @@ function clamp(n) {
 
 function currentSprite() {
   if (state.sleeping) return "sleeping";
-  if (state.stage === "egg") return "egg";
-  if (state.stage === "baby") return blinkOn ? "baby_blink" : "baby";
-  return state.stage; // teen / adult
+  if (state.stage === "kit") return "kit";
+  if (state.stage === "bunny") return blinkOn ? "bunny_blink" : "bunny";
+  return state.stage; // rabbit
 }
 
 function render() {
@@ -226,8 +210,8 @@ function render() {
     hint.textContent = "a little bored — maybe play?";
   } else if (state.energy < 20) {
     hint.textContent = "running low on energy — let it rest";
-  } else if (state.stage === "egg") {
-    hint.textContent = "something's stirring in there...";
+  } else if (state.stage === "kit") {
+    hint.textContent = "still tiny, keep taking good care of it";
   } else {
     hint.textContent = "content and cozy";
   }
