@@ -33,6 +33,14 @@ Everything about how the bunny looks and behaves is just data at the top of `scr
 
 Some ideas for extending it: add a "sick" state if a stat hits zero for too long, add sound effects on interactions, or swap the device shell CSS for a totally different look. I went with a candy colored handheld, but a retro CRT or a plush toy shell would work just as well with the same game logic underneath.
 
+## How it works, in plain English
+
+- Load saved stats from `localStorage`, or start a fresh bunny at 80/80/80 if there's nothing saved
+- Every second: subtract a little from hunger, joy, and energy (unless it's asleep, then energy climbs back up instead)
+- Add up how many hours the bunny's stats have stayed healthy, and once that crosses a threshold, bump it to the next growth stage
+- Redraw whichever pixel grid matches its current stage and state (awake, blinking, asleep)
+- Feed, play, and sleep buttons just nudge those three stats directly
+
 ## Notes
 
 - State is stored per browser via `localStorage`, so it won't sync across devices. This isn't a hosted service, just a fun front end toy.
