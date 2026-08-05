@@ -1,6 +1,6 @@
-# pixel-tamagotchi 🐰
+# pixel-tamagotchi 🌱
 
-A tiny bunny that lives in your browser tab. Feed it, play with it, let it sleep, and watch it grow from a newborn kit into a full grown rabbit. Ignore it and it'll get grumpy about it, just like the real ones did in the 90s.
+A tiny plant buddy that lives in your browser tab. Water it, give it sunlight, let it rest, and watch it grow from a bare sprout into a full little bloom, with a cute face right on the pot that reacts as it grows. Ignore it and it'll let you know about it, just like a real plant would.
 
 ![status](https://img.shields.io/badge/status-active-brightgreen) ![license](https://img.shields.io/badge/license-MIT-blue)
 
@@ -10,36 +10,29 @@ I wanted to see how small I could make a "real" tamagotchi feel. No sprite sheet
 
 Open `index.html` in any browser. That's it, no install and no server needed, though `npx serve .` works fine if you'd rather have one.
 
-Your bunny:
-- **Grows** from a newborn kit into a young bunny, then a full grown rabbit, the longer you keep its stats healthy
-- **Gets hungry, bored, and tired** over real time. The stat bars drain slowly whether the tab is open or not
-- **Remembers you.** Progress saves to `localStorage`, so closing the tab and coming back later picks up right where you left off (though it will have gotten hungrier while you were gone)
+Your plant buddy:
+- **Grows** from a bare sprout into a leafy plant, then into a full bloom with a little flower, the longer you keep its stats healthy
+- **Gets thirsty, sun-starved, and tired** over real time. The stat bars drain slowly whether the tab is open or not
+- **Has a face on the pot**, not the plant, two little eyes and blush cheeks that stay put as the plant above it grows and changes
+- **Remembers you.** Progress saves to `localStorage`, so closing the tab and coming back later picks up right where you left off (though it'll have gotten thirstier while you were gone)
 
 ### Controls
 
 | Button | Effect |
 |---|---|
-| 🥕 Feed | Refills hunger |
-| 🎾 Play | Refills joy, costs a little energy |
-| 🌙 Sleep | Bunny stops aging its needs and slowly recovers energy until you wake it |
+| 💧 Water | Refills water |
+| ☀️ Sun | Refills sunlight, costs a little energy |
+| 🌙 Rest | Plant stops aging its needs and slowly recovers energy until you wake it |
 
 ## Why this is fun to fork
 
-Everything about how the bunny looks and behaves is just data at the top of `script.js`.
+Everything about how the plant looks and behaves is just data at the top of `script.js`.
 
-- **Sprites** are ASCII grids (`.` for empty, letters for palette colors), so you can draw a new pose by editing a 16x14 grid of characters, no art tools required. Long ears, a round body, and a little pink nose are what make it read as a bunny rather than an abstract blob, worth keeping in mind if you draw your own stages.
+- **Sprites** are ASCII grids (`.` for empty, letters for palette colors), so you can draw a new pose by editing a 16x14 grid of characters, no art tools required. The pot's face (eyes and blush) stays in the same spot across every stage on purpose, only the plant growing out of it changes, that consistency is what sells the "same little guy, just growing" feeling.
 - **Decay rate, evolution timing, and stat effects** are all constants near the top of the file, so tuning the game's pacing is a one line change
-- **Palette** is a simple lookup table, so re-skinning the whole bunny to a different color scheme only takes a few hex swaps
+- **Palette** is a simple lookup table, so re-skinning the whole thing, pot color, leaf color, flower color, only takes a few hex swaps
 
-Some ideas for extending it: add a "sick" state if a stat hits zero for too long, add sound effects on interactions, or swap the device shell CSS for a totally different look. I went with a candy colored handheld, but a retro CRT or a plush toy shell would work just as well with the same game logic underneath.
-
-## How it works, in plain English
-
-- Load saved stats from `localStorage`, or start a fresh bunny at 80/80/80 if there's nothing saved
-- Every second: subtract a little from hunger, joy, and energy (unless it's asleep, then energy climbs back up instead)
-- Add up how many hours the bunny's stats have stayed healthy, and once that crosses a threshold, bump it to the next growth stage
-- Redraw whichever pixel grid matches its current stage and state (awake, blinking, asleep)
-- Feed, play, and sleep buttons just nudge those three stats directly
+Some ideas for extending it: add a wilted state if a stat hits zero for too long, add more bloom variations with different flower colors, or swap the device shell CSS for a totally different look, a greenhouse window, a windowsill scene, a terracotta shelf.
 
 ## Notes
 
@@ -48,4 +41,4 @@ Some ideas for extending it: add a "sick" state if a stat hits zero for too long
 
 ## License
 
-MIT. Raise as many as you want.
+MIT. Grow as many as you want.

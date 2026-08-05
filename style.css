@@ -1,10 +1,10 @@
 * { box-sizing: border-box; }
 
 :root {
-  --shell: #c9b6e4;
-  --shell-dark: #a98fcf;
-  --shell-shadow: #8b6fb5;
-  --accent: #f2a9c8;
+  --shell: #b8cba3;
+  --shell-dark: #93ac7c;
+  --shell-shadow: #708a5c;
+  --accent: #e0955f;
   --screen-bg: #b9d191;
   --screen-dark: #33422a;
   --cream: #fdf6ec;

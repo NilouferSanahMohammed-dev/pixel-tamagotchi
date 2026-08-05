@@ -1,18 +1,19 @@
 /**
  * pixel-tamagotchi
  * ----------------
- * A tiny virtual pet that lives entirely in the browser. No backend,
- * no build step — state is saved to localStorage so your pet survives
- * a page refresh (but not a different browser or device).
+ * A tiny plant buddy that lives entirely in the browser. No backend,
+ * no build step, state is saved to localStorage so it survives a page
+ * refresh (but not a different browser or device).
  *
- * Stats decay slowly over real time. Feed, play, and put your pet to
- * sleep to keep it happy. Let it go too long and it'll let you know.
+ * Stats decay slowly over real time. Water it, give it sunlight, and
+ * let it rest to keep it healthy. Let it go too long and it'll let
+ * you know. The pot has a little face that reacts as it grows.
  */
 
 const STORAGE_KEY = "pixel-tamagotchi-save-v1";
 const TICK_MS = 1000;
 const DECAY_PER_TICK = 0.06; // stat points lost per second, per stat
-const EVOLUTION_HOURS = [0, 0.02, 0.06]; // kit -> bunny -> rabbit (hours of care)
+const EVOLUTION_HOURS = [0, 0.02, 0.06]; // sprout -> plant -> bloom (hours of care)
 
 const canvas = document.getElementById("screen");
 const ctx = canvas.getContext("2d");
@@ -22,102 +23,103 @@ const CELL = 8; // px per pixel-art cell (canvas is 128x112 -> 16x14 grid)
 
 const PALETTE = {
   ".": null,
-  "k": "#33422a",
-  "w": "#fdf6ec",
-  "p": "#f2a9c8",
-  "d": "#8b6fb5",
-  "s": "#e8e0f5",
-  "e": "#2b2b2b",
-  "g": "#cfc6e0",
+  "w": "#fdf6ec", // pot rim highlight
+  "o": "#c9772f", // pot body (terracotta)
+  "p": "#f2a9c8", // blush cheeks
+  "e": "#2b2b2b", // eyes
+  "g": "#6fa85c", // leaves
+  "f": "#e8a4c9", // flower petals
+  "y": "#f2d24a", // flower center
+  "z": "#9ab08a", // sleepy zzz marks
 };
 
 /* ---------------- Sprites (16 wide x 14 tall grids) ---------------- */
 
 const SPRITES = {
-  kit: [
+  sprout: [
     "................",
     "................",
     "................",
-    "......ww.ww.....",
-    ".....wwwwwww....",
-    "....wwwwwwwww...",
-    "....wwgw.gwww...",
-    "....wwwwpwww....",
-    ".....wwwwwww....",
-    "......wwwww.....",
     "................",
     "................",
+    ".......g........",
+    ".......gg.......",
+    ".....wwwwww.....",
+    "....wwwwwwww....",
+    "...ooeooooeoo...",
+    "...ooopoopooo...",
+    "...oooooooooo...",
+    "....oooooooo....",
+    ".....wwwwww.....",
+  ],
+  plant: [
     "................",
+    "................",
+    ".......gg.......",
+    "......g..g......",
+    "......g..g......",
+    ".......gg.......",
+    ".....wwwwww.....",
+    "....wwwwwwww....",
+    "...ooeooooeoo...",
+    "...ooopoopooo...",
+    "...oooooooooo...",
+    "....oooooooo....",
+    ".....wwwwww.....",
     "................",
   ],
-  bunny: [
+  plant_blink: [
     "................",
-    ".....ww..ww.....",
-    ".....ww..ww.....",
-    ".....ww..ww.....",
-    "....wwwwwwww....",
-    "...wwwwwwwwww...",
-    "...wgewwwewgw...",
-    "...wwwwpwwwww...",
-    "...wwwwwwwwww...",
-    "....wwwwwwww....",
-    ".....w....w.....",
-    ".....w....w.....",
     "................",
+    ".......gg.......",
+    "......g..g......",
+    "......g..g......",
+    ".......gg.......",
+    ".....wwwwww.....",
+    "....wwwwwwww....",
+    "...oogoooogoo...",
+    "...ooopoopooo...",
+    "...oooooooooo...",
+    "....oooooooo....",
+    ".....wwwwww.....",
     "................",
   ],
-  bunny_blink: [
+  bloom: [
     "................",
-    ".....ww..ww.....",
-    ".....ww..ww.....",
-    ".....ww..ww.....",
+    "......fyyf......",
+    ".......ff.......",
+    "......g..g......",
+    "......g..g......",
+    ".......gg.......",
+    ".....wwwwww.....",
     "....wwwwwwww....",
-    "...wwwwwwwwww...",
-    "...wg....gwgw...",
-    "...wwwwpwwwww...",
-    "...wwwwwwwwww...",
-    "....wwwwwwww....",
-    ".....w....w.....",
-    ".....w....w.....",
+    "...ooeooooeoo...",
+    "...ooopoopooo...",
+    "...oooooooooo...",
+    "....oooooooo....",
+    ".....wwwwww.....",
     "................",
-    "................",
-  ],
-  rabbit: [
-    "....ww....ww....",
-    "....ww....ww....",
-    "....wp....pw....",
-    "....ww....ww....",
-    "...wwwwwwwwww...",
-    "..wwwwwwwwwwww..",
-    "..wgewww.wewgw..",
-    "..wwwwwwpwwwww..",
-    "..wwwwwwwwwwww..",
-    "...wwwwwwwwww...",
-    "....ww....ww....",
-    "....ww....ww....",
-    ".....w.ww.w.....",
-    "......www.......",
   ],
   sleeping: [
     "................",
+    "...........z....",
+    "............z...",
     "................",
-    "....ww....ww....",
-    "...wwww..wwww...",
-    "..wwwwwwwwwwww..",
-    "..wwwwwwwwwwww..",
-    "..wg.wwwwwg.w...",
-    "..wwwwwwpwwwww..",
-    "...wwwwwwwwww...",
+    "................",
+    ".......g........",
+    ".......gg.......",
+    ".....wwwwww.....",
     "....wwwwwwww....",
-    "................",
-    "........z.......",
-    ".........z......",
-    "................",
+    "...oogoooogoo...",
+    "...ooopoopooo...",
+    "...oooooooooo...",
+    "....oooooooo....",
+    ".....wwwwww.....",
   ],
 };
 
 function drawSprite(gridName) {
-  const grid = SPRITES[gridName] || SPRITES.kit;
+  const grid = SPRITES[gridName] || SPRITES.sprout;
   ctx.fillStyle = "#b9d191";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -136,11 +138,11 @@ function drawSprite(gridName) {
 
 function defaultState() {
   return {
-    hunger: 80,
-    joy: 80,
+    water: 80,
+    sunlight: 80,
     energy: 80,
     careHours: 0,
-    stage: "kit",
+    stage: "sprout",
     sleeping: false,
     bornAt: Date.now(),
     lastTick: Date.now(),
@@ -168,15 +170,15 @@ let blinkOn = false;
 /* ---------------- Evolution ---------------- */
 
 function stageForCareHours(hours) {
-  if (hours >= EVOLUTION_HOURS[2]) return "rabbit";
-  if (hours >= EVOLUTION_HOURS[1]) return "bunny";
-  return "kit";
+  if (hours >= EVOLUTION_HOURS[2]) return "bloom";
+  if (hours >= EVOLUTION_HOURS[1]) return "plant";
+  return "sprout";
 }
 
 /* ---------------- Rendering ---------------- */
 
-const hungerFill = document.getElementById("hungerFill");
-const joyFill = document.getElementById("joyFill");
+const waterFill = document.getElementById("waterFill");
+const sunlightFill = document.getElementById("sunlightFill");
 const energyFill = document.getElementById("energyFill");
 const nameplate = document.getElementById("nameplate");
 const hint = document.getElementById("hint");
@@ -187,33 +189,33 @@ function clamp(n) {
 
 function currentSprite() {
   if (state.sleeping) return "sleeping";
-  if (state.stage === "kit") return "kit";
-  if (state.stage === "bunny") return blinkOn ? "bunny_blink" : "bunny";
-  return state.stage; // rabbit
+  if (state.stage === "sprout") return "sprout";
+  if (state.stage === "plant") return blinkOn ? "plant_blink" : "plant";
+  return state.stage; // bloom
 }
 
 function render() {
   drawSprite(currentSprite());
 
-  hungerFill.style.width = `${clamp(state.hunger)}%`;
-  joyFill.style.width = `${clamp(state.joy)}%`;
+  waterFill.style.width = `${clamp(state.water)}%`;
+  sunlightFill.style.width = `${clamp(state.sunlight)}%`;
   energyFill.style.width = `${clamp(state.energy)}%`;
 
   const dayNum = Math.max(1, Math.floor((Date.now() - state.bornAt) / (1000 * 60 * 60 * 24)) + 1);
   nameplate.textContent = `${state.stage} · day ${dayNum}`;
 
   if (state.sleeping) {
-    hint.textContent = "shh, sleeping — wake it by clicking sleep again";
-  } else if (state.hunger < 25) {
-    hint.textContent = "getting hungry — try feeding it";
-  } else if (state.joy < 25) {
-    hint.textContent = "a little bored — maybe play?";
+    hint.textContent = "shh, resting — wake it by clicking rest again";
+  } else if (state.water < 25) {
+    hint.textContent = "getting thirsty — try watering it";
+  } else if (state.sunlight < 25) {
+    hint.textContent = "could use some sun";
   } else if (state.energy < 20) {
     hint.textContent = "running low on energy — let it rest";
-  } else if (state.stage === "kit") {
-    hint.textContent = "still tiny, keep taking good care of it";
+  } else if (state.stage === "sprout") {
+    hint.textContent = "just starting out, keep taking good care of it";
   } else {
-    hint.textContent = "content and cozy";
+    hint.textContent = "happy and thriving";
   }
 }
 
@@ -225,10 +227,10 @@ function tick() {
   state.lastTick = now;
 
   if (!state.sleeping) {
-    state.hunger = clamp(state.hunger - DECAY_PER_TICK * elapsedSec);
-    state.joy = clamp(state.joy - DECAY_PER_TICK * 0.8 * elapsedSec);
+    state.water = clamp(state.water - DECAY_PER_TICK * elapsedSec);
+    state.sunlight = clamp(state.sunlight - DECAY_PER_TICK * 0.8 * elapsedSec);
     state.energy = clamp(state.energy - DECAY_PER_TICK * 0.5 * elapsedSec);
-    if (state.hunger > 40 && state.joy > 40) {
+    if (state.water > 40 && state.sunlight > 40) {
       state.careHours += elapsedSec / 3600;
     }
   } else {
@@ -246,22 +248,22 @@ function tick() {
 
 /* ---------------- Interactions ---------------- */
 
-document.getElementById("feedBtn").addEventListener("click", () => {
+document.getElementById("waterBtn").addEventListener("click", () => {
   if (state.sleeping) return;
-  state.hunger = clamp(state.hunger + 22);
-  bump("feedBtn");
+  state.water = clamp(state.water + 22);
+  bump("waterBtn");
 });
 
-document.getElementById("playBtn").addEventListener("click", () => {
+document.getElementById("sunBtn").addEventListener("click", () => {
   if (state.sleeping) return;
-  state.joy = clamp(state.joy + 20);
+  state.sunlight = clamp(state.sunlight + 20);
   state.energy = clamp(state.energy - 8);
-  bump("playBtn");
+  bump("sunBtn");
 });
 
-document.getElementById("sleepBtn").addEventListener("click", () => {
+document.getElementById("restBtn").addEventListener("click", () => {
   state.sleeping = !state.sleeping;
-  bump("sleepBtn");
+  bump("restBtn");
 });
 
 function bump(id) {
